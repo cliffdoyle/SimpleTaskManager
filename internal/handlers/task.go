@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/cliffdoyle/SimpleTaskManager.git/internal/models"
+	"github.com/go-playground/locales/id"
 	"github.com/gorilla/mux"
 )
 
@@ -115,4 +116,46 @@ func (t *TaskHandler)CreateTask(w http.ResponseWriter, r *http.Request){
 	json.NewEncoder(w).Encode(task)
 
 	// http.Error(w, "Not implemented", http.StatusNotImplemented)
+}
+
+//UpdateTask updates a task
+func (t *TaskHandler)UpdateTask(w http.ResponseWriter, r *http.Request){
+	//Get Id from the url
+	params:=mux.Vars(r)
+	id:=params["id"]
+	//parse the request body			
+	var task models.Task
+	err:=json.NewDecoder(r.Body).Decode(&task)
+	if err!=nil{
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	//validate the task
+	if task.Title==""{		
+		http.Error(w, "Title is required", http.StatusBadRequest)
+		return
+	}
+
+	//update the task in the database
+	err=t.DB.QueryRow(`UPDATE tasks SET title=$1,description=$2,status=$3,updated_at=NOW() WHERE id=$4 RETURNING id,title,description,status,created_at,updated_at`,task.Title,task.Description,task.Status,id).Scan(&task.ID,&task.Title,&task.Description,&task.Status,&task.CreatedAt,&task.UpdatedAt)
+	if err!=nil{
+		if err==sql.ErrNoRows{
+			http.Error(w, "Task not found", http.StatusNotFound)
+			return
+		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err!=nil{
+		if err==sql.ErrNoRows{
+			http.Error(w, "Task not found", http.StatusNotFound)
+			return
+		}else{
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		return
+	}
+	//Return Json response
+	w.Header().Set("content-type","application/jsom")
+	json.NewEncoder(w).Encode(task)
 }
