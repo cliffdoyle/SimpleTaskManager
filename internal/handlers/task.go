@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/cliffdoyle/SimpleTaskManager.git/internal/models"
-	"github.com/go-playground/locales/id"
 	"github.com/gorilla/mux"
 )
 
@@ -87,7 +86,6 @@ func (t *TaskHandler)GetTask(w http.ResponseWriter, r *http.Request){
 
 //CreateTask creates a new task
 func (t *TaskHandler)CreateTask(w http.ResponseWriter, r *http.Request){
-	//TODO implement me
 	//parse the request body
 	var task models.Task
 	err:=json.NewDecoder(r.Body).Decode(&task)
@@ -158,4 +156,32 @@ func (t *TaskHandler)UpdateTask(w http.ResponseWriter, r *http.Request){
 	//Return Json response
 	w.Header().Set("content-type","application/jsom")
 	json.NewEncoder(w).Encode(task)
+}
+
+//deleteTask deletes a task
+func (t *TaskHandler)DeleteTask(w http.ResponseWriter, r *http.Request){
+	//Get Id from the url
+	params:=mux.Vars(r)
+	id:=params["id"]
+
+	//Delete the task from the database
+	result,err:=t.DB.Exec("DELETE FROM tasks WHERE id=$1",id)
+	if err!=nil{
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	//check if the task was deleted
+	rowsAfected,err:=result.RowsAffected()
+	if err!=nil{
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if rowsAfected==0{
+		http.Error(w, "Task not found", http.StatusNotFound)
+		return
+	}
+	//Return Json response
+	w.Header().Set("content-type","application/jsom")
+	w.WriteHeader(http.StatusNoContent)
+	json.NewEncoder(w).Encode(map[string]string{"message":"Task deleted successfully"})
 }
