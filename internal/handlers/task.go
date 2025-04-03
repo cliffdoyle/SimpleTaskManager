@@ -83,3 +83,36 @@ func (t *TaskHandler)GetTask(w http.ResponseWriter, r *http.Request){
 
 	http.Error(w, "Not implemented", http.StatusNotImplemented)
 }
+
+//CreateTask creates a new task
+func (t *TaskHandler)CreateTask(w http.ResponseWriter, r *http.Request){
+	//TODO implement me
+	//parse the request body
+	var task models.Task
+	err:=json.NewDecoder(r.Body).Decode(&task)
+	if err!=nil{
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	//validate the task
+	if task.Title==""{
+		http.Error(w, "Title is required", http.StatusBadRequest)
+		return
+	}	
+	if task.Status==""{
+		task.Status="pending"
+	}
+
+	//insert the task into the database
+	err=t.DB.QueryRow(`INSERT INTO tasks(title,description,status,created_at,updated_at) VALUES ($1,$2,$3,NOW(),NOW()) RETURNING id,title,description,status,created_at,updated_at`,task.Title,task.Description,task.Status,task.CreatedAt,task.UpdatedAt).Scan(&task.ID,&task.Title,&task.Description,&task.Status,&task.CreatedAt,&task.UpdatedAt)
+	if err!=nil{
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	//Return Json response
+	w.Header().Set("content-type","application/jsom")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(task)
+
+	// http.Error(w, "Not implemented", http.StatusNotImplemented)
+}
