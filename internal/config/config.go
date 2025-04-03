@@ -13,16 +13,18 @@ type Config struct {
 	DBName string
 	DBHost string
 	DBPort string
+	Port string
 
 }
 //Loads configuration fron environment variables
 func LoadConfig()*Config{
 	config := &Config{
-        DBUser:     getEnv("DB_USER", "postgres"),
-        DBPassword: getEnv("DB_PASSWORD", "postgres"),
+        DBUser:     getEnv("DB_USER", "cliffdoyle"),
+        DBPassword: getEnv("DB_PASSWORD", "kombewa"),
         DBName:     getEnv("DB_NAME", "gotasker"),
         DBHost:     getEnv("DB_HOST", "localhost"),
-        DBPort:       getEnv("PORT", "8080"),
+		DBPort:     getEnv("DB_PORT", "5432"),
+        Port:       getEnv("PORT", "8080"),
     }
 	return config
 

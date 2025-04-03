@@ -38,8 +38,8 @@ func main(){
 	r.PathPrefix("/").Handler(fs)
 
 	//start server
-	log.Printf("Starting server on %s", cfg.DBPort)
-	log.Fatal(http.ListenAndServe(":"+cfg.DBPort, r))
+	log.Printf("Starting server on %s", cfg.Port)
+	log.Fatal(http.ListenAndServe(":"+cfg.Port, r))
 
 }
 
