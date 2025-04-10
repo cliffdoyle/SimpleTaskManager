@@ -21,7 +21,7 @@ func NewTaskHandler(db *sql.DB)*TaskHandler{
 
 //GetTasks returns all tasks
 func (t *TaskHandler)GetTasks(w http.ResponseWriter, r *http.Request){
-	//TODO implement me
+	// TODO implement me
 	//querry tasks
 	rows,err:=t.DB.Query(`SELECT id, title, description,status,created_at,updated_at
 	FROM tasks
@@ -49,11 +49,11 @@ func (t *TaskHandler)GetTasks(w http.ResponseWriter, r *http.Request){
 	}
 
 	//Return Json response
-	w.Header().Set("content-type","application/jsom")
+	w.Header().Set("content-type","application/json")
 	json.NewEncoder(w).Encode(tasks)
 
 	
-	http.Error(w, "Not implemented", http.StatusNotImplemented)
+	// http.Error(w, "Not implemented", http.StatusNotImplemented)
 }
 
 //GetTask returns a single task
@@ -78,10 +78,10 @@ func (t *TaskHandler)GetTask(w http.ResponseWriter, r *http.Request){
 	}
 
 	//Return Json response
-	w.Header().Set("content-type","application/jsom")
+	w.Header().Set("content-type","application/json")
 	json.NewEncoder(w).Encode(task)
 
-	http.Error(w, "Not implemented", http.StatusNotImplemented)
+	// http.Error(w, "Not implemented", http.StatusNotImplemented)
 }
 
 //CreateTask creates a new task
@@ -103,13 +103,13 @@ func (t *TaskHandler)CreateTask(w http.ResponseWriter, r *http.Request){
 	}
 
 	//insert the task into the database
-	err=t.DB.QueryRow(`INSERT INTO tasks(title,description,status,created_at,updated_at) VALUES ($1,$2,$3,NOW(),NOW()) RETURNING id,title,description,status,created_at,updated_at`,task.Title,task.Description,task.Status,task.CreatedAt,task.UpdatedAt).Scan(&task.ID,&task.Title,&task.Description,&task.Status,&task.CreatedAt,&task.UpdatedAt)
+	err=t.DB.QueryRow(`INSERT INTO tasks(title,description,status,created_at,updated_at) VALUES ($1,$2,$3,NOW(),NOW()) RETURNING id,title,description,status,created_at,updated_at`,task.Title,task.Description,task.Status).Scan(&task.ID,&task.Title,&task.Description,&task.Status,&task.CreatedAt,&task.UpdatedAt)
 	if err!=nil{
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	//Return Json response
-	w.Header().Set("content-type","application/jsom")
+	w.Header().Set("content-type","application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(task)
 
@@ -154,7 +154,7 @@ func (t *TaskHandler)UpdateTask(w http.ResponseWriter, r *http.Request){
 		return
 	}
 	//Return Json response
-	w.Header().Set("content-type","application/jsom")
+	w.Header().Set("content-type","application/json")
 	json.NewEncoder(w).Encode(task)
 }
 
@@ -181,7 +181,7 @@ func (t *TaskHandler)DeleteTask(w http.ResponseWriter, r *http.Request){
 		return
 	}
 	//Return Json response
-	w.Header().Set("content-type","application/jsom")
+	w.Header().Set("content-type","application/json")
 	w.WriteHeader(http.StatusNoContent)
 	json.NewEncoder(w).Encode(map[string]string{"message":"Task deleted successfully"})
 }
